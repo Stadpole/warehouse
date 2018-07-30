@@ -1,0 +1,44 @@
+spring:
+    datasource:
+      url: jdbc:mysql://localhost:3306/warehouse
+      username: root
+      password: 111
+      driver-class-name: com.mysql.jdbc.Driver
+      filters: stat,wall,log4j
+#spring.mail.host=smtp.qq.com
+#spring.mail.username=用户名  //发送方的邮箱
+#spring.mail.password=密码  //对于qq邮箱而言 密码指的就是发送方的授权码
+#spring.mail.properties.mail.smtp.auth=true
+#spring.mail.properties.mail.smtp.starttls.enable=true
+#spring.mail.properties.mail.smtp.starttls.required=true
+    jpa:
+      database: mysql
+      show-sql: true
+      hibernate:
+        ddl-auto: update
+        naming:
+          strategy: org.hibernate.cfg.DefaultComponentSafeNamingStrategy
+      properties:
+         hibernate:
+            dialect: org.hibernate.dialect.MySQL5Dialect
+    aop:
+      auto: true
+    #application:
+      #name: rabbitmq
+    #rabbitmq:
+        #host: 10.103.241.154
+        #port: 5672
+        #username: admin
+        #password: 123456
+        #publisher-confirms: true
+
+server:
+  error:
+    whitelabel:
+      enabled: false
+
+
+    #thymeleaf:
+     #  cache: false
+      # mode: LEGACYHTML5
+
