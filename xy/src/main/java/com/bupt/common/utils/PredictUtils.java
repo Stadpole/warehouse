@@ -1,16 +1,6 @@
 package com.bupt.common.utils;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,8 +14,8 @@ import weka.core.converters.ConverterUtils.DataSource;
 
 
 public class PredictUtils {
-	private List<Double> coef=new ArrayList<Double>();
-//  ���ȱ��룬��ĳһ�н��б���
+	private static List<Double> coef=new ArrayList<Double>();
+//  独热编码，对某一列进行编码
     private static String filePath="E://121.json";
     private static double learnRate=0.0001;
     public static ArrayList<String> oneHot(List<String> ls, int indexs) throws Exception {
@@ -37,7 +27,7 @@ public class PredictUtils {
         int labelindex=ls.get(0).split(",").length-1;
         for(int index=0;index<indexs;index++){
             label.clear();
-//      ������ֵ
+//      建立键值
         HashSet<String> set = new HashSet<String>();
         for (String l : ls) {
             set.add(l.split(",")[index]);
@@ -46,14 +36,14 @@ public class PredictUtils {
         	features.add(index+":"+i);
         }
 
-//        Ϊ��ֵӳ�������±�
+//       为键值映射数组下表
         HashMap<String, Integer> toIndex = new HashMap<String, Integer>();
         int ind = 0;
         for (String a : set) {
             toIndex.put(a, ind);
             ind++;
         }
-//      ��ʼ����
+//      开始编码
 
         for (int i=0; i<ls.size(); i++) {
             int a[] = new int[set.size()];
@@ -69,10 +59,10 @@ public class PredictUtils {
             file.delete();
             PrintStream ps = new PrintStream(new FileOutputStream(file));
             for(int i=0;i<features.size();i++){
-//            ps.println(i);// ���ļ���д���ַ���
-            ps.append(features.get(i));// �����еĻ���������ַ���
+//            ps.println(i);//往文件里写入字符串
+            ps.append(features.get(i));// 在已有的基础上添加字符串
         	if(i!=features.size()-1){
-                ps.append(",");// �����еĻ���������ַ���        		
+                ps.append(",");// 在已有的基础上添加字符串
         	}
             }
         } catch (FileNotFoundException e) {
@@ -82,9 +72,9 @@ public class PredictUtils {
         for(int i=0;i<ls.size();i++){
         	String[] temp=ls.get(i).split(",");
         	String tt="";
-        	for(int j=indexs;j<temp.length;j++){
+        	for(int j=indexs;j<temp.length-1;j++){
         	    if(j!=labelindex)
-        		tt+=(temp[j]+",");
+        		tt+=(temp[j]+',');
         	}
         	tt+=label.get(i);
         	ls.set(i, tt);
@@ -92,8 +82,14 @@ public class PredictUtils {
         return (ArrayList<String>) ls;
     }
     public static boolean exportCsv(File file, List<String> dataList){
+        int length=dataList.get(0).split(",").length;
+        String temp="";
+        for(int i=1;i<length;i++){
+            temp+=(i+",");
+        }
+        temp+=(length+"");
+        dataList.add(0,temp);
         boolean isSucess=false;
-        
         FileOutputStream out=null;
         OutputStreamWriter osw=null;
         BufferedWriter bw=null;
@@ -140,24 +136,32 @@ public class PredictUtils {
     }
     public static List<String> importCsv(File file){
         List<String> dataList=new ArrayList<String>();
-        
-        BufferedReader br=null;
-        try { 
-            br = new BufferedReader(new FileReader(file));
-            String line = ""; 
-            while ((line = br.readLine()) != null) { 
-                dataList.add(line);
+        try {
+            DataInputStream in = new DataInputStream(new FileInputStream(file));
+            BufferedReader br=null;
+            br= new BufferedReader(new InputStreamReader(in,"GBK"));
+            //br = new BufferedReader(new FileReader(file,"utf-8"));
+            String line = "";
+            boolean b=false;
+            while ((line=br.readLine()) != null) {
+                if(b==false){
+                    b=true;
+                }
+                else {
+                    dataList.add(line);
+                }
+
             }
         }catch (Exception e) {
         }finally{
-            if(br!=null){
-                try {
-                    br.close();
-                    br=null;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+//            if(br!=null){
+//                try {
+//                    br.close();
+//                    br=null;
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
         }
  
         return dataList;
@@ -177,11 +181,11 @@ public class PredictUtils {
 	}
 	return result;
 }
-	static String getONEHOT(String log) throws IOException{
+	public static String getONEHOT(String log) throws IOException{
 		File file = new File(filePath);
         InputStreamReader reader = new InputStreamReader(  
-                new FileInputStream(filePath)); // ����һ������������reader
-        BufferedReader br = new BufferedReader(reader); // ����һ�����������ļ�����ת�ɼ�����ܶ���������  
+                new FileInputStream(filePath)); // 建立一个输入流对象reader
+        BufferedReader br = new BufferedReader(reader); // 建立一个对象，它把文件内容转成计算机能读懂的语言
         String line = "";  
         line = br.readLine();
         String[] standard=line.split(",");
@@ -205,14 +209,14 @@ public class PredictUtils {
         result=result.substring(0,result.length()-1);
         return result;
 	}
-	List<Double> Getcoef(String path) throws Exception{
-        DataSource source=new DataSource(path);//ѵ������  
+	public static List<Double> Getcoef(String path) throws Exception{
+        DataSource source=new DataSource(path);//训练数据
         Instances data=source.getDataSet();
-        if(data.classIndex()==-1)    
-            data.setClassIndex(data.numAttributes()-1);//ʹ�����һ��������Ϊ�������  
+//        if(data.classIndex()==-1)
+         data.setClassIndex(data.numAttributes()-1);//使用最后一个特征作为类别特征
+         LinearRegression linear = new LinearRegression();
 
-        LinearRegression linear = new LinearRegression();
-        linear.buildClassifier(data);//����ѵ�����ݹ��������
+        linear.buildClassifier(data);//根据训练数据构造分类器
         for(double i:linear.coefficients())
             coef.add(i);
 	return coef; 

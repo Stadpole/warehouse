@@ -3,15 +3,6 @@ package com.bupt.common.utils;
 /**
  * Created by Stadpole on 2018/5/24.
  */
-import com.bupt.entity.Warehouse;
-import com.bupt.service.WarehouseService;
-import org.apache.commons.lang3.time.DateFormatUtils;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -80,13 +71,22 @@ public class CsvUtils {
             throws IOException {
         // 写入文件头部
         for (Object data : row) {
-//          StringBuffer sb = new StringBuffer();
             String rowStr="";
-//          rowStr= sb.append("\"").append(data).append("\",").toString();
-            if(data.toString().contains("\"")){
-                rowStr="\""+data.toString().replaceAll("\"","\"\"")+"\",";
-            }else{
-                rowStr="\""+data.toString()+"\",";
+            if(data.toString().contains("\"")&&data!=row.get(row.size()-1)){
+               //rowStr="\""+data.toString().replaceAll("\"","\"\"")+"\",";
+                rowStr=""+data.toString().replaceAll("\"","")+",";
+            }
+            if(data.toString().contains("\"")&&data==row.get(row.size()-1)){
+                //rowStr="\""+data.toString().replaceAll("\"","\"\"")+"\",";
+                rowStr=""+data.toString().replaceAll("\"","")+"";
+            }
+            else if(data==row.get(row.size()-1)){
+             //  rowStr="\""+data.toString()+"\",";
+                rowStr=""+data.toString();
+            }
+            else{
+                //  rowStr="\""+data.toString()+"\",";
+                rowStr=""+data.toString()+",";
             }
             csvWriter.write(rowStr);
         }
@@ -112,9 +112,9 @@ public class CsvUtils {
             for(Object ob:retList.get(0).keySet()){
                 head.add(ob);
             }
-            System.out.println(head);
+            System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"+head);
             System.out.println(dataList);
-            createCSVFile(head,dataList,out_put_Path,"test");
+            createCSVFile(head,dataList,out_put_Path,"raw_dataset");
         }
 
     }
