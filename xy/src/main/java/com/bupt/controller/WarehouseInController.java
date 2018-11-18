@@ -65,6 +65,7 @@ public class WarehouseInController extends BaseCommonController {
                entity.setRkCount(entity.getApplyCount());
                entity.setRkStatus(1);
                 warehouseInService.save(entity);
+                repertoryService.change(entity.getCkId(),entity.getSpId(),entity);
                 UserInfo userInfo=userInfoService.findById(entity.getYhId());
                 if(userInfo!=null){
                    final String email=userInfo.getEmail();
@@ -82,7 +83,7 @@ public class WarehouseInController extends BaseCommonController {
                         e.printStackTrace();
                     }
                 }
-                repertoryService.change(entity.getCkId(),entity.getSpId(),entity);
+
                 return sendSuccessMessage();
             }
             else{
@@ -128,7 +129,7 @@ public class WarehouseInController extends BaseCommonController {
                 return sendMessage("true", "", entity, DateUtil.DATE);
             }
             else {
-                return "Noting in the box!";
+                return sendFailMessage("false","null");
             }
         }catch (Exception e){
             return sendFailMessage();
